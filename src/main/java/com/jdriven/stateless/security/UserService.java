@@ -3,7 +3,6 @@ package com.jdriven.stateless.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.social.connect.ConnectionKey;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,8 +31,8 @@ public class UserService implements SocialUserService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public User loadUserByConnectionKey(ConnectionKey connectionKey) {
-		final User user = userRepo.findByProviderIdAndProviderUserId(connectionKey.getProviderId(), connectionKey.getProviderUserId());
+	public User loadUserByProviderIdAndProviderUserId(String providerId, String providerUserId) {
+		final User user = userRepo.findByProviderIdAndProviderUserId(providerId, providerUserId);
 		return checkUser(user);
 	}
 

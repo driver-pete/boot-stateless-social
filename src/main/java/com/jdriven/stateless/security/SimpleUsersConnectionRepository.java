@@ -26,7 +26,9 @@ public class SimpleUsersConnectionRepository implements UsersConnectionRepositor
     @Override
     public List<String> findUserIdsWithConnection(Connection<?> connection) {
         try {
-            User user = userService.loadUserByConnectionKey(connection.getKey());
+            User user = userService.loadUserByProviderIdAndProviderUserId(
+                    connection.getKey().getProviderId(),
+                    connection.getKey().getProviderUserId());
             user.setAccessToken(connection.createData().getAccessToken());
             userService.updateUserDetails(user);
             return Arrays.asList(user.getUserId());
@@ -38,10 +40,9 @@ public class SimpleUsersConnectionRepository implements UsersConnectionRepositor
     @Override
     public Set<String> findUserIdsConnectedTo(String providerId, Set<String> providerUserIds) {
         Set<String> keys = new HashSet<>();
-        for (String userId: providerUserIds) {
-            ConnectionKey ck = new ConnectionKey(providerId, userId);
+        for (String providerUserId: providerUserIds) {
             try {
-                keys.add(userService.loadUserByConnectionKey(ck).getUserId());
+                keys.add(userService.loadUserByProviderIdAndProviderUserId(providerId, providerUserId).getUserId());
             } catch (AuthenticationException ae) {
                 //ignore
             }
