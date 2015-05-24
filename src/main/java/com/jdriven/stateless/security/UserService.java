@@ -13,8 +13,6 @@ public class UserService implements SocialUserService {
 	@Autowired
 	private UserRepository userRepo;
 
-	private final AccountStatusUserDetailsChecker detailsChecker = new AccountStatusUserDetailsChecker();
-
 	@Override
 	@Transactional(readOnly = true)
 	public User loadUserByUserId(String userId)  {
@@ -45,7 +43,12 @@ public class UserService implements SocialUserService {
 		if (user == null) {
 			throw new UsernameNotFoundException("user not found");
 		}
-		detailsChecker.check(user);
+		/*
+	     * This object throws standard exceptions if user account is locked, expired etc.
+	     * Exception messages might be obtained from a message source.
+	     */
+		AccountStatusUserDetailsChecker checker = new AccountStatusUserDetailsChecker();
+		checker.check(user);
 		return user;
 	}
 }

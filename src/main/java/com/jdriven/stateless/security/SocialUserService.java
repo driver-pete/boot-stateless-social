@@ -18,10 +18,14 @@ public interface SocialUserService extends SocialUserDetailsService, UserDetails
     User loadUserByUserId(String userId);
     
     /*
-     * This is used in UsersConnectionRepository in order to find user from its Facebook connection
+     * This function used in UsersConnectionRepository in order to find user from its Facebook connection
      * after user logs in in Facebook
      */
     User loadUserByProviderIdAndProviderUserId(String providerId, String providerUserId);
 
+    /*
+     * This function is used in UsersConnectionRepository to update user's access token from
+     * Facebook connection information.
+     */
     void updateUserDetails(User user);
 }

@@ -10,9 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class UserController {
 
-	@Autowired
-	UserRepository userRepository;
-
 	@RequestMapping(value = "/api/user/current", method = RequestMethod.GET)
 	public User getCurrent() {
 		final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

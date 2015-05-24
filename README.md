@@ -16,3 +16,11 @@ run with `gradle run`
 or go with `mvn spring-boot:run`
 
 
+
+===================
+Architecture:
+UserRepository - class that implements interactions with database that stores User objects.
+SocialUserService - this class uses UserRepository to find and update users by some fields.
+    It implements UserDetailsService for spring security and SocialUserDetailsService for spring social.
+
+  
