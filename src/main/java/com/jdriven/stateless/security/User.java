@@ -95,9 +95,7 @@ public class User implements SocialUserDetails {
 	public Set<String> getRoles() {
         Set<String> roles = new HashSet<String>();
         for (UserAuthority authority : authorities) {
-            String authorityStr = authority.getAuthority();
-            authorityStr = authorityStr.substring(authorityStr.lastIndexOf("_") + 1);
-            roles.add(authorityStr);
+            roles.add(authority.getAuthority());
         }
         return roles;
     }
@@ -190,7 +188,7 @@ public class User implements SocialUserDetails {
 	private UserAuthority authorityFromRole(String role)
 	{
         UserAuthority authority = new UserAuthority();
-        authority.setAuthority("ROLE_" + role);
+        authority.setAuthority(role);
         authority.setUser(this);
         return authority;
 	}
