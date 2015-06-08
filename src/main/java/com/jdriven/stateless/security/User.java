@@ -1,10 +1,18 @@
 package com.jdriven.stateless.security;
 
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -84,37 +92,39 @@ public class User implements SocialUserDetails {
 	}
 
 	// Use Roles as external API
-	public Set<UserRole> getRoles() {
-		Set<UserRole> roles = EnumSet.noneOf(UserRole.class);
+	public Set<String> getRoles() {
+        Set<String> roles = new HashSet<String>();
+        if (authorities != null) {
+            for (UserAuthority authority : authorities) {
+                String authorityStr = authority.getAuthority();
+                authorityStr = authorityStr.substring(authorityStr.lastIndexOf("_") + 1);
+                roles.add(authorityStr);
+            }
+        }
+        return roles;
+    }
+
+    public void setRoles(Set<String> roles) {
+        for (String role : roles) {
+            this.grantRole(role);
+        }
+    }
+
+    public void grantRole(String role) {
+        if (authorities == null) {
+            authorities = new HashSet<UserAuthority>();
+        }
+		authorities.add(this.authorityFromRole(role));
+    }
+
+	public void revokeRole(String role) {
 		if (authorities != null) {
-			for (UserAuthority authority : authorities) {
-				roles.add(UserRole.valueOf(authority));
-			}
-		}
-		return roles;
-	}
-
-	public void setRoles(Set<UserRole> roles) {
-		for (UserRole role : roles) {
-			grantRole(role);
+			authorities.remove(this.authorityFromRole(role));
 		}
 	}
 
-	public void grantRole(UserRole role) {
-		if (authorities == null) {
-			authorities = new HashSet<UserAuthority>();
-		}
-		authorities.add(role.asAuthorityFor(this));
-	}
-
-	public void revokeRole(UserRole role) {
-		if (authorities != null) {
-			authorities.remove(role.asAuthorityFor(this));
-		}
-	}
-
-	public boolean hasRole(UserRole role) {
-		return authorities.contains(role.asAuthorityFor(this));
+	public boolean hasRole(String role) {
+		return authorities.contains(this.authorityFromRole(role));
 	}
 
 	@Override
@@ -182,5 +192,13 @@ public class User implements SocialUserDetails {
 
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
+	}
+	
+	private UserAuthority authorityFromRole(String role)
+	{
+        UserAuthority authority = new UserAuthority();
+        authority.setAuthority("ROLE_" + role);
+        authority.setUser(this);
+        return authority;
 	}
 }
