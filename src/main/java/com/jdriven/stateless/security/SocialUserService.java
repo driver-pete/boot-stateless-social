@@ -53,7 +53,6 @@ public class SocialUserService implements SocialUserDetailsService, UserDetailsS
      * This function used in UsersConnectionRepository in order to find user from its Facebook connection
      * after user logs in in Facebook
      */
-    //@Override
     @Transactional(readOnly = true)
     public User loadUserByProviderIdAndProviderUserId(String providerId, String providerUserId) {
         final User user = userRepo.findByProviderIdAndProviderUserId(providerId, providerUserId);
@@ -64,7 +63,6 @@ public class SocialUserService implements SocialUserDetailsService, UserDetailsS
      * This function is used in UsersConnectionRepository to update user's access token from
      * Facebook connection information.
      */
-    //@Override
     public void updateUserDetails(User user) {
         userRepo.save(user);
     }
