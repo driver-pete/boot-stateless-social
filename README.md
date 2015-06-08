@@ -8,14 +8,10 @@ facebook.appSecret=<you app secret>
 
 The build files and application.properties include commented out configuration for postgresql, mostly for testing behavior across server reboots.
 
-Needs Gradle 2 or maven 3 and JDK 7
+Needs Gradle 2 and JDK 7
 
 build with `gradle build`  
 run with `gradle run`
-
-or go with `mvn spring-boot:run`
-
-
 
 ===================
 Architecture:
