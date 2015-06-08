@@ -11,10 +11,9 @@ public class UserAuthenticationUserIdSource implements UserIdSource {
 	public String getUserId() {
 		final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		User user = null;
-		if (authentication instanceof UserAuthentication) {
+		if (authentication != null) {
 			user = (User) authentication.getPrincipal();
 		}
-
 		if (user == null) {
 			throw new IllegalStateException("Unable to get a ConnectionRepository: no user signed in");
 		}

@@ -7,6 +7,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,8 +24,7 @@ public class TokenAuthenticationService {
 		tokenHandler = new TokenHandler(DatatypeConverter.parseBase64Binary(secret));
 	}
 
-	public void addAuthentication(HttpServletResponse response, UserAuthentication authentication) {
-		final User user = authentication.getDetails();
+	public void addAuthenticatedUser(HttpServletResponse response, User user) {
 		user.setExpires(System.currentTimeMillis() + TEN_DAYS);
 		final String token = tokenHandler.createTokenForUser(user);
 
@@ -34,15 +34,12 @@ public class TokenAuthenticationService {
 		response.addCookie(createCookieForToken(token));
 	}
 
-	public UserAuthentication getAuthentication(HttpServletRequest request) {
+	public User getAuthenticatedUser(HttpServletRequest request) {
 		// to prevent CSRF attacks we still only allow authentication using a custom HTTP header
 		// (it is up to the client to read our previously set cookie and put it in the header)
 		final String token = request.getHeader(AUTH_HEADER_NAME);
 		if (token != null) {
-			final User user = tokenHandler.parseUserFromToken(token);
-			if (user != null) {
-				return new UserAuthentication(user);
-			}
+			return tokenHandler.parseUserFromToken(token);
 		}
 		return null;
 	}

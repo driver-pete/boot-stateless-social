@@ -26,10 +26,7 @@ public class SocialAuthenticationSuccessHandler extends SavedRequestAwareAuthent
 
 		// Lookup the complete User object from the database and create an Authentication for it
 		final User authenticatedUser = userService.loadUserByUsername(authentication.getName());
-
-		// Add UserAuthentication to the response
-		final UserAuthentication userAuthentication = new UserAuthentication(authenticatedUser);
-		tokenAuthenticationService.addAuthentication(response, userAuthentication);
+		tokenAuthenticationService.addAuthenticatedUser(response, authenticatedUser);
 		super.onAuthenticationSuccess(request, response, authentication);
 	}
 }
