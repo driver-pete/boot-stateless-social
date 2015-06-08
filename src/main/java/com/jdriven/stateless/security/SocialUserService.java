@@ -38,7 +38,6 @@ public class SocialUserService implements SocialUserDetailsService, UserDetailsS
         return checkUser(user);
     }
 
-    
     /*
      * from UserDetailsService: load UserDetails by username.
      * User implements SocialUserDetails which in turn implements UserDetails
