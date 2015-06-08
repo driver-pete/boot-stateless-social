@@ -60,7 +60,7 @@ public class User implements SocialUserDetails {
 	private boolean accountEnabled;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER, orphanRemoval = true)
-	private Set<UserAuthority> authorities;
+	private Set<UserAuthority> authorities = new HashSet<UserAuthority>();
 
 	public Long getId() {
 		return id;
@@ -94,12 +94,10 @@ public class User implements SocialUserDetails {
 	// Use Roles as external API
 	public Set<String> getRoles() {
         Set<String> roles = new HashSet<String>();
-        if (authorities != null) {
-            for (UserAuthority authority : authorities) {
-                String authorityStr = authority.getAuthority();
-                authorityStr = authorityStr.substring(authorityStr.lastIndexOf("_") + 1);
-                roles.add(authorityStr);
-            }
+        for (UserAuthority authority : authorities) {
+            String authorityStr = authority.getAuthority();
+            authorityStr = authorityStr.substring(authorityStr.lastIndexOf("_") + 1);
+            roles.add(authorityStr);
         }
         return roles;
     }
@@ -111,16 +109,11 @@ public class User implements SocialUserDetails {
     }
 
     public void grantRole(String role) {
-        if (authorities == null) {
-            authorities = new HashSet<UserAuthority>();
-        }
 		authorities.add(this.authorityFromRole(role));
     }
 
 	public void revokeRole(String role) {
-		if (authorities != null) {
-			authorities.remove(this.authorityFromRole(role));
-		}
+		authorities.remove(this.authorityFromRole(role));
 	}
 
 	public boolean hasRole(String role) {
