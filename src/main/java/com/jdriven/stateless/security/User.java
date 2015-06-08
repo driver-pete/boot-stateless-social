@@ -3,19 +3,20 @@ package com.jdriven.stateless.security;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.social.security.SocialUserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -59,8 +60,8 @@ public class User implements SocialUserDetails {
 	@NotNull
 	private boolean accountEnabled;
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER, orphanRemoval = true)
-	private Set<UserAuthority> authorities = new HashSet<UserAuthority>();
+	@ElementCollection(fetch = FetchType.EAGER)
+	private Set<String> roles = new HashSet<String>();
 
 	public Long getId() {
 		return id;
@@ -87,35 +88,33 @@ public class User implements SocialUserDetails {
 
 	@Override
 	@JsonIgnore
-	public Set<UserAuthority> getAuthorities() {
+	public Set<GrantedAuthority> getAuthorities() {
+	    Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
+	    for (String role : this.roles) {
+            authorities.add(new SimpleGrantedAuthority(role));
+        }
 		return authorities;
 	}
 
 	// Use Roles as external API
 	public Set<String> getRoles() {
-        Set<String> roles = new HashSet<String>();
-        for (UserAuthority authority : authorities) {
-            roles.add(authority.getAuthority());
-        }
-        return roles;
+	    return roles;
     }
 
     public void setRoles(Set<String> roles) {
-        for (String role : roles) {
-            this.grantRole(role);
-        }
+        this.roles = roles;
     }
 
     public void grantRole(String role) {
-		authorities.add(this.authorityFromRole(role));
+        this.roles.add(role);
     }
 
 	public void revokeRole(String role) {
-		authorities.remove(this.authorityFromRole(role));
+	    this.roles.remove(role);
 	}
 
 	public boolean hasRole(String role) {
-		return authorities.contains(this.authorityFromRole(role));
+	    return this.roles.contains(role);
 	}
 
 	@Override
@@ -183,13 +182,5 @@ public class User implements SocialUserDetails {
 
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
-	}
-	
-	private UserAuthority authorityFromRole(String role)
-	{
-        UserAuthority authority = new UserAuthority();
-        authority.setAuthority(role);
-        authority.setUser(this);
-        return authority;
 	}
 }
