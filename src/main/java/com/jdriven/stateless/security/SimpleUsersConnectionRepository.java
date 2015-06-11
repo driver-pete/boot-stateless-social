@@ -33,6 +33,7 @@ public class SimpleUsersConnectionRepository implements UsersConnectionRepositor
             userService.updateUserDetails(user);
             return Arrays.asList(user.getUserId());
         } catch (AuthenticationException ae) {
+            // if there is no user with this provider id we automatically create a new user
             return Arrays.asList(connectionSignUp.execute(connection));
         }
     }
