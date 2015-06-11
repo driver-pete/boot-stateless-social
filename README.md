@@ -14,13 +14,31 @@ build with `gradle build`
 run with `gradle run`
 
 ===================
-
 Architecture:
+Spring social core objects:
+Connection - user-specific object that stores necessary data (susch as token) to access a particular social
+    provider (e.g Facebook) for a particular user. Connection can be persisted so that application can
+    access the user profile without additional login screen.
+ConnectionFactory - object that can create Connection for a user. Typically it has to be associated with
+    provider application (such as Facebook application). User grants rights to the application to act on its
+    behalf and have access to his data. After that the application (and therefore ConnectionFactory) can
+    create a Connection.
+ConnectionFactoryRegistry - this object provides access to Connection factories
+    based on provider id (such as "Facebook"). It is populated via ConnectionFactoryConfigurer, which in turn
+    is configured in StatelessSocialConfig.
+ConnectionRepository - interface for saving and restoring Connection objects from a persistent store. An object
+    is specific to a particular user (one ConnectionRepository for one user) but can span accross multiple
+    social providers.
+
+
 User - the main object which is stored in the database that represents the user with its roles,
     attributes, expiration, social id etc.
 UserRepository - class that implements interactions with database that stores User objects.
 SocialUserService - this class uses UserRepository to find and update users by some fields.
     It implements UserDetailsService for spring security and SocialUserDetailsService for spring social.
+ 
+
 SimpleUsersConnectionRepository - ...
 
+TemporaryConnectionRepository - in-memory ConnectionRepository
   
