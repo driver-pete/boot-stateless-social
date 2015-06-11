@@ -29,6 +29,10 @@ ConnectionFactoryRegistry - this object provides access to Connection factories
 ConnectionRepository - interface for saving and restoring Connection objects from a persistent store. An object
     is specific to a particular user (one ConnectionRepository for one user) but can span accross multiple
     social providers.
+UsersConnectionRepository - interface for saving and restoring Connection objects from a persistent store.
+    Operates accross all users and not specific to the single user.
+ConnectionSignUp - interface creates user id from new Connection. Usually it presents signup form for creating 
+    an account with the application.
 
 
 User - the main object which is stored in the database that represents the user with its roles,
@@ -36,9 +40,10 @@ User - the main object which is stored in the database that represents the user 
 UserRepository - class that implements interactions with database that stores User objects.
 SocialUserService - this class uses UserRepository to find and update users by some fields.
     It implements UserDetailsService for spring security and SocialUserDetailsService for spring social.
- 
-
-SimpleUsersConnectionRepository - ...
+AutoSignUpHandler - automatically (without sign-up form) creates a new User from the Connection and
+    saves it to UserRepository.
+SimpleUsersConnectionRepository - UsersConnectionRepository that uses SocialUserService,
+    ConnectionFactoryLocator and AutoSignUpHandler to retreive and update Connections for users.
 
 TemporaryConnectionRepository - in-memory ConnectionRepository
   
