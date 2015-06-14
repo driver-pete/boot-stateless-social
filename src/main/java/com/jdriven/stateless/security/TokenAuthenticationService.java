@@ -31,7 +31,9 @@ public class TokenAuthenticationService {
 		// Put the token into a cookie because the client can't capture response
 		// headers of redirects / full page reloads.
 		// (Its reloaded as a result of this response triggering a redirect back to "/")
-		response.addCookie(createCookieForToken(token));
+	    Cookie authCookie = new Cookie(AUTH_COOKIE_NAME, token);
+	    authCookie.setPath("/");
+		response.addCookie(authCookie);
 	}
 
 	public User getAuthenticatedUser(HttpServletRequest request) {
@@ -42,11 +44,5 @@ public class TokenAuthenticationService {
 			return tokenHandler.parseUserFromToken(token);
 		}
 		return null;
-	}
-
-	private Cookie createCookieForToken(String token) {
-		final Cookie authCookie = new Cookie(AUTH_COOKIE_NAME, token);
-		authCookie.setPath("/");
-		return authCookie;
 	}
 }

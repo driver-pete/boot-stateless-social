@@ -47,13 +47,19 @@ TemporaryConnectionRepository - in-memory ConnectionRepository
 SimpleUsersConnectionRepository - UsersConnectionRepository that uses SocialUserService,
     ConnectionFactoryLocator, TemporaryConnectionRepository, and AutoSignUpHandler to retreive
     and update Connections for users.
-TokenHandler - conversion from User to binary token and back
 UserAuthenticationUserIdSource - returns user id that is currently in the security context
 
+TokenHandler - conversion from User to binary token and back
+TokenAuthenticationService - uses TokenHandler to add user to response cookie.
+    Also reads User from the request header. 
+StatelessAuthenticationFilter - uses TokenAuthenticationService to get User from header of every request
+    and puts user into the SecurityContext
+SocialAuthenticationSuccessHandler - implementation of SavedRequestAwareAuthenticationSuccessHandler which
+   is called after successful authentication with the original web request and response. Usually it redirects
+   to the page that has been called by the nonauth. user before the authentication so that user sees the page
+   he requested. SocialAuthenticationSuccessHandler loads user based on username and adds cookie to the response
+   using TokenAuthenticationService.
 
-SocialAuthenticationSuccessHandler - TODO:
-StatelessAuthenticationFilter - TODO:
-TokenAuthenticationService - TODO:
 
 Controllers:
 UserController - important controller that returns currently logged in user by which js client determines
@@ -61,8 +67,8 @@ UserController - important controller that returns currently logged in user by w
 FacebookController - fetches public facebook profile
 
 Configs:
-StatelessSocialConfig - ..
-StatelessAuthenticationSecurityConfig - ..
+StatelessSocialConfig - set up Social classes
+StatelessAuthenticationSecurityConfig - set up security classes
 StatelessAuthentication - main
 
 
