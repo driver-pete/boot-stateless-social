@@ -29,13 +29,13 @@ public class AutoSignUpHandler implements ConnectionSignUp {
     }
 
     private void grantRoles(final User user) {
-        user.grantRole(UserRole.USER);
+        user.grantRole("USER");
 
         //grant admin rights to the first user
         if (userCount == 0) {
             userCount = userRepository.count();
             if (userCount == 0) {
-                user.grantRole(UserRole.ADMIN);
+                user.grantRole("ADMIN");
             }
         }
     }

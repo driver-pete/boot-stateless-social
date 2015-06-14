@@ -35,7 +35,7 @@ public class StatelessSocialConfig extends SocialConfigurerAdapter {
 
 	@Override
 	public UserIdSource getUserIdSource() {
-		// retrieve the UserId from the UserAuthentication in the security context
+		// retrieve the UserId from the Authentication in the security context
 		return new UserAuthenticationUserIdSource();
 	}
 
