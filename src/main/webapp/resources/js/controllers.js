@@ -41,16 +41,18 @@ app.controller('AuthCtrl', function ($scope, $rootScope, $http, $cookies, TokenS
 		if (authCookie) {
 			TokenStorage.store(authCookie);
 			delete $cookies['AUTH-TOKEN'];
+			$http.get('/api/user/current').success(function (user) {
+                if (user.username) {
+                    $rootScope.authenticated = true;
+                    $scope.username = user.username;
+                    
+                    // For display purposes only
+                    $scope.token = JSON.parse(atob(TokenStorage.retrieve().split('.')[0]));
+                } else {
+                    // TODO: does it mean that we are not authenticated again?
+                }
+            });
 		}
-		$http.get('/api/user/current').success(function (user) {
-			if (user.username) {
-				$rootScope.authenticated = true;
-				$scope.username = user.username;
-				
-				// For display purposes only
-				$scope.token = JSON.parse(atob(TokenStorage.retrieve().split('.')[0]));
-			}
-		});
 	};
 
 	$scope.logout = function () {

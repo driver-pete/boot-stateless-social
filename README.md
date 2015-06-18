@@ -71,5 +71,27 @@ StatelessSocialConfig - set up Social classes
 StatelessAuthenticationSecurityConfig - set up security classes
 StatelessAuthentication - main
 
+===================
+
+Flow of events:
+Client does not have token.
+Client hits /auth/facebook.
+... auth...
+Client gets cookie 'AUTH-TOKEN', client reads token from it and deletes the cookie.
+Client stores the token.
+Client uses the token to access /api/user/current
+...
+Client receives populated User object.
+Client switches to authenticated state because it knows that token is valid.
+What is client receives bad User object?
+
+
+Security of client localStorage: 
+https://blog.whitehatsec.com/web-storage-security/
+
+If client requests User json object using GET /api/user/current without token
+Anonymous authentication is created.
+UserController returns default empty User object.
+Empty User object is propagated to client as json.
 
  

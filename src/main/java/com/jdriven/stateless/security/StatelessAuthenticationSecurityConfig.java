@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.social.UserIdSource;
 import org.springframework.social.security.SocialAuthenticationFilter;
@@ -34,6 +35,9 @@ public class StatelessAuthenticationSecurityConfig extends WebSecurityConfigurer
 	private SocialUserService userService;
 
 	public StatelessAuthenticationSecurityConfig() {
+	    /* disableDefaults - true
+	     * We manually tune all the aspects of security.
+	     */
 		super(true);
 	}
 
@@ -48,6 +52,7 @@ public class StatelessAuthenticationSecurityConfig extends WebSecurityConfigurer
 				return socialAuthenticationFilter;
 			}
 		});
+		socialConfigurer.userIdSource(userIdSource);
 
 		/* Bellow we first apply default configuration from WebSecurityConfigurerAdapter
          * but comment out some lines that are not useful for stateless security server
@@ -117,6 +122,7 @@ public class StatelessAuthenticationSecurityConfig extends WebSecurityConfigurer
              * By default anonymous users will be represented with an AnonymousAuthenticationToken
              * and contain the role "ROLE_ANONYMOUS".
              * Original code gives access to non-authenticated users for GET requests.
+             * If anonymous disabled, user will get 403 forbidden error on any non-auth. request.
              */
             .anonymous().and()
             /*
@@ -156,17 +162,19 @@ public class StatelessAuthenticationSecurityConfig extends WebSecurityConfigurer
 			.addFilterBefore(statelessAuthenticationFilter, AbstractPreAuthenticatedProcessingFilter.class)
 
 			// apply the configuration from the socialConfigurer (adds the SocialAuthenticationFilter)
-			.apply(socialConfigurer.userIdSource(userIdSource));
+			.apply(socialConfigurer);
 	}
 
 	/*
-	 * The reason of this function is to put @Bean on the default authenticationManager
-	 * created by the parent.
 	 * In order to put userService into AuthenticationManager, you need to call
-	 * configure of this class. "configure" is called by authenticationManagerBean
-	 * the parent class. However this authentication manager will not be autowired because it is not
-	 * exposed as a bean. You can only Autowire a spring managed bean.
-	 * If its not exposed as a bean, you cannot Autowire it. 
+	 * configure(AuthenticationManagerBuilder auth) below. "configure" is called by authenticationManagerBean
+	 * the parent class of this config (WebSecurityConfigurerAdapter).
+	 * However authentication manager of the parent will not be autowired because it is not
+	 * exposed as a bean (if its not exposed as a @Bean, you cannot Autowire it). 
+	 * To summarize, the reason of this function is to put @Bean annotation on the default authenticationManager
+     * configured with "configure".
+	 * http://stackoverflow.com/questions/21633555/how-to-inject-authenticationmanager-using-java-configuration-in-a-custom-filter
+	 * However there are examples of configuring AuthManager without overriding this function..
 	 */
 	@Bean
 	@Override
@@ -180,7 +188,7 @@ public class StatelessAuthenticationSecurityConfig extends WebSecurityConfigurer
 	}
 
 	@Override
-	protected SocialUserService userDetailsService() {
+	protected UserDetailsService userDetailsService() {
 		return userService;
 	}
 }
