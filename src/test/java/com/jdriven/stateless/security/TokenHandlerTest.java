@@ -26,12 +26,12 @@ public class TokenHandlerTest {
 	@Test
 	public void testRoundTrip_ProperData() {
 		final User user = robbert();
-		user.grantRole("ADMIN");
+		user.grantRole("ROLE_ADMIN");
 
 		final User parsedUser = tokenHandler.parseUserFromToken(tokenHandler.createTokenForUser(user));
 
 		assertEquals(user.getUsername(), parsedUser.getUsername());
-		assertTrue(parsedUser.hasRole("ADMIN"));
+		assertTrue(parsedUser.hasRole("ROLE_ADMIN"));
 	}
 
 	@Test
