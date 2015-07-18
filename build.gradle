@@ -47,7 +47,6 @@ dependencies {
 
   testCompile('org.springframework.boot:spring-boot-starter-test')
 
-  //runtime('org.postgresql:postgresql:9.2-1004-jdbc4')
   runtime('com.h2database:h2')
 }
 

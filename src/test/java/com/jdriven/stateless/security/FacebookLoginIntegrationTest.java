@@ -13,6 +13,9 @@ import java.net.URL;
 
 
 
+
+
+
 //import org.apache.commons.lang3.StringUtils;
 ////import org.apache.http.HttpHeaders;
 //import org.apache.http.client.HttpClient;
@@ -34,6 +37,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -41,6 +45,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.social.config.annotation.ConnectionFactoryConfigurer;
+import org.springframework.social.config.annotation.EnableSocial;
+import org.springframework.social.config.annotation.SocialConfigurerAdapter;
+import org.springframework.social.facebook.connect.FacebookConnectionFactory;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
@@ -55,16 +63,18 @@ import org.springframework.web.client.RestTemplate;
  * main config for some reason.
  * 
  */
-//@Configuration
-//@Order(1)
-//// default order of WebSecurityConfig is 100, so this config has a priority
-//class TestWebSecurityConfig extends WebSecurityConfig {
-//    @Override
-//    protected void configure(HttpSecurity http) throws Exception {
-//        http.authorizeRequests().antMatchers("/facebook_mock/**").permitAll();
-//        super.configure(http);
-//    }
-//}
+@Configuration
+@EnableSocial
+@Order(1)
+// default order of WebSecurityConfig is 100, so this config has a priority
+class TestStatelessSocialConfig extends SocialConfigurerAdapter {
+    @Override
+    public void addConnectionFactories(ConnectionFactoryConfigurer cfConfig, Environment env) {
+        cfConfig.addConnectionFactory(new FacebookConnectionFactory(
+                env.getProperty("facebook.appKey"),
+                env.getProperty("facebook.appSecret")));
+    }
+}
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = { StatelessAuthentication.class })
@@ -82,20 +92,20 @@ public class FacebookLoginIntegrationTest {
         this.basePath = "http://localhost:8080/";
     }
 
-    @Test
-    public void getAnonymousUser() throws Exception {
-        ResponseEntity<User> response = template.getForEntity(
-                this.basePath + "api/user/current", User.class);
-        User user = response.getBody();
-        assertNull(user.getUsername());
-    }
-    
-    @Test
-    public void getSecuredAnonymously() throws Exception {
-        ResponseEntity<String> response = template.getForEntity(
-                this.basePath + "api/restricted/generic", String.class);
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.FORBIDDEN));
-    }
+//    @Test
+//    public void getAnonymousUser() throws Exception {
+//        ResponseEntity<User> response = template.getForEntity(
+//                this.basePath + "api/user/current", User.class);
+//        User user = response.getBody();
+//        assertNull(user.getUsername());
+//    }
+//    
+//    @Test
+//    public void getSecuredAnonymously() throws Exception {
+//        ResponseEntity<String> response = template.getForEntity(
+//                this.basePath + "api/restricted/generic", String.class);
+//        assertThat(response.getStatusCode(), equalTo(HttpStatus.FORBIDDEN));
+//    }
     
     @Test
     public void loginFlow() throws Exception {
@@ -104,6 +114,11 @@ public class FacebookLoginIntegrationTest {
         assertTrue(response.getStatusCode().is3xxRedirection());
         URI loginRedirect = response.getHeaders().getLocation();
         assertThat(loginRedirect.toString(), startsWith("https://www.facebook.com/v1.0/dialog/oauth"));
+        
+        ResponseEntity<String> facebookResponse = template.getForEntity(
+                loginRedirect.toString(), String.class);
+        System.out.println(facebookResponse);
+        assertTrue(false);
     }
     
 //    @Test
