@@ -36,7 +36,7 @@ public class StatelessAuthenticationSecurityConfig extends WebSecurityConfigurer
 
 	public StatelessAuthenticationSecurityConfig() {
 	    /* disableDefaults - true
-	     * We manually tune all the aspects of security.
+	     * We manually configure all the aspects of security.
 	     */
 		super(true);
 	}

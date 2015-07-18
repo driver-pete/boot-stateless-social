@@ -51,6 +51,7 @@ public class StatelessSocialConfig extends SocialConfigurerAdapter {
 		return usersConnectionRepository;
 	}
 
+	//TODO: might be deleted if we don't want to use facebook api
 	@Bean
 	@Scope(value = "request", proxyMode = ScopedProxyMode.INTERFACES)
 	public Facebook facebook(ConnectionRepository repository) {

@@ -108,11 +108,16 @@ Client gets cookie 'AUTH-TOKEN', client reads token from it and deletes the cook
 Client stores the token.
 Client is in the authenticated state.
 Client uses the token to access /api/user/current
-...
+    - token is placed into the 'X-AUTH-TOKEN' header by client
+    - StatelessAuthenticationFilter receives the request
+        - TokenAuthenticationService extracts User from the token
+        - Authentication is put into SecurityContextHolder
+        - UserController returns user from the token as json 
 Client receives populated User object.
 Client switches to authenticated state because it knows that token is valid.
-What is client receives bad User object?
+TODO: What is client receives bad User object?
 
+Now client can call secured urls such as /api/users/current/details
 
 Security of client localStorage: 
 https://blog.whitehatsec.com/web-storage-security/
