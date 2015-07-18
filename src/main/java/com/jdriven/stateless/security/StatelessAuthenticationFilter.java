@@ -36,7 +36,6 @@ public class StatelessAuthenticationFilter extends GenericFilterBean {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
 			ServletException {
-	    
 	    Authentication authentication = null;
 	    User user = tokenAuthenticationService.getAuthenticatedUser((HttpServletRequest) request);
 	    if (user != null) {

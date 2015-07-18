@@ -71,5 +71,60 @@ StatelessSocialConfig - set up Social classes
 StatelessAuthenticationSecurityConfig - set up security classes
 StatelessAuthentication - main
 
+===================
+
+Flow of events:
+User hits the root '/' which is not protected,
+User receives index.html with javascript client.
+Client does not have token.
+User hits button 'login with facebook'.
+Client hits /auth/facebook.
+Filter SocialAuthenticationFilter "requiresAuthentication" returns true because facebook is registered as provider.
+Facebook OAuth2AuthenticationService processes the request:
+ - it tries to get token from it and fails with AuthenticationServiceException
+ - Facebook connection factory creates connection and build redirect url
+ - exception is raised which is handles by SocialAuthenticationFailureHandler
+ - it generates redirect to facebook
+User authenticate himself and the app on facebbok
+After finishing auth on facebook, facebook calls /auth/facebook with the code
+Facebook OAuth2AuthenticationService processes the request:
+ - it successfully extracts token from the code
+ - there is Connection in the token already
+ - AuthenticationManager.authenticate(token)
+   - SocialAuthenticationProvider uses Connection from the token
+      - to call findUserIdsWithConnection of SimpleUsersConnectionRepository
+      - SimpleUsersConnectionRepository tries to find user in the userRepo and fails
+      - because of exception, connectionSignUp.execute(connection) is called
+      - AutoSignUpHandler adds user to the repository
+   - SocialAuthenticationProvider is unaware of the all that gets id of the newly added user
+ - AuthenticationManager authorization is successful
+ - updateConnections(authService, token, success);
+   - TemporaryConnectionRepository is created for this user
+   - Connection is added to it
+ - SocialAuthenticationSuccessHandler on success is called
+   - token is added into 'AUTH-TOKEN' cookie
+ 
+Client gets cookie 'AUTH-TOKEN', client reads token from it and deletes the cookie.
+Client stores the token.
+Client is in the authenticated state.
+Client uses the token to access /api/user/current
+    - token is placed into the 'X-AUTH-TOKEN' header by client
+    - StatelessAuthenticationFilter receives the request
+        - TokenAuthenticationService extracts User from the token
+        - Authentication is put into SecurityContextHolder
+        - UserController returns user from the token as json 
+Client receives populated User object.
+Client switches to authenticated state because it knows that token is valid.
+TODO: What is client receives bad User object?
+
+Now client can call secured urls such as /api/users/current/details
+
+Security of client localStorage: 
+https://blog.whitehatsec.com/web-storage-security/
+
+If client requests User json object using GET /api/user/current without token
+Anonymous authentication is created.
+UserController returns default empty User object.
+Empty User object is propagated to client as json.
 
  
