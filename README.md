@@ -117,7 +117,7 @@ Client receives populated User object.
 Client switches to authenticated state because it knows that token is valid.
 TODO: What is client receives bad User object?
 
-Now client can call secured urls such as /api/users/current/details
+Now client can call secured urls such as /api/facebook/details
 
 Security of client localStorage: 
 https://blog.whitehatsec.com/web-storage-security/

@@ -106,6 +106,9 @@ public class User implements SocialUserDetails {
     }
 
     public void grantRole(String role) {
+        if (!role.startsWith("ROLE_")) {
+            throw new IllegalArgumentException("Role has to start with ROLE_ prefix");
+        }
         this.roles.add(role);
     }
 
