@@ -16,6 +16,8 @@ import java.net.URL;
 
 
 
+
+
 //import org.apache.commons.lang3.StringUtils;
 ////import org.apache.http.HttpHeaders;
 //import org.apache.http.client.HttpClient;
@@ -36,6 +38,7 @@ import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
@@ -49,6 +52,7 @@ import org.springframework.social.config.annotation.ConnectionFactoryConfigurer;
 import org.springframework.social.config.annotation.EnableSocial;
 import org.springframework.social.config.annotation.SocialConfigurerAdapter;
 import org.springframework.social.facebook.connect.FacebookConnectionFactory;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
@@ -66,13 +70,15 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 @EnableSocial
 @Order(1)
+@Profile("test")
 // default order of WebSecurityConfig is 100, so this config has a priority
-class TestStatelessSocialConfig extends SocialConfigurerAdapter {
+class TestStatelessSocialConfig extends StatelessSocialConfig {
     @Override
     public void addConnectionFactories(ConnectionFactoryConfigurer cfConfig, Environment env) {
-        cfConfig.addConnectionFactory(new FacebookConnectionFactory(
-                env.getProperty("facebook.appKey"),
-                env.getProperty("facebook.appSecret")));
+        System.out.println("TEST_HELLO");
+//        cfConfig.addConnectionFactory(new FacebookConnectionFactory(
+//                env.getProperty("facebook.appKey"),
+//                env.getProperty("facebook.appSecret")));
     }
 }
 
@@ -80,6 +86,7 @@ class TestStatelessSocialConfig extends SocialConfigurerAdapter {
 @SpringApplicationConfiguration(classes = { StatelessAuthentication.class })
 @WebAppConfiguration
 @IntegrationTest({})
+@ActiveProfiles("test")
 public class FacebookLoginIntegrationTest {
 
     //private URL base;
