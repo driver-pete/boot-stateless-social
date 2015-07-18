@@ -1,6 +1,7 @@
 package com.jdriven.stateless.security;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
@@ -94,6 +95,15 @@ public class FacebookLoginIntegrationTest {
         ResponseEntity<String> response = template.getForEntity(
                 this.basePath + "api/restricted/generic", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.FORBIDDEN));
+    }
+    
+    @Test
+    public void loginFlow() throws Exception {
+        ResponseEntity<String> response = template.getForEntity(
+                this.basePath + "auth/facebook", String.class);
+        assertTrue(response.getStatusCode().is3xxRedirection());
+        URI loginRedirect = response.getHeaders().getLocation();
+        assertThat(loginRedirect.toString(), startsWith("https://www.facebook.com/v1.0/dialog/oauth"));
     }
     
 //    @Test
