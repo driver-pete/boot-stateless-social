@@ -106,6 +106,37 @@ public class FacebookLoginIntegrationTest {
     
     @Test
     public void loginFlow() throws Exception {
+        String token = this.getTestToken();
+        User user = this.requestWithToken(token,
+             this.basePath + "api/user/current", User.class).getBody();
+        assertThat(user.getUsername(), equalTo("TestMike"));
+    }
+
+    @Test
+    public void getSecuredAsUser() throws Exception {
+        String token = this.getTestToken();
+        String response = this.requestWithToken(token,
+                this.basePath + "api/restricted/generic", String.class).getBody();
+        assertThat(response, equalTo("AUTHENTICATED_ONLY"));
+    }
+    
+    @Test
+    public void getSecuredAsUserBadToken() throws Exception {
+        String token = this.getTestToken() + 'x';
+        ResponseEntity<String> response = this.requestWithToken(token,
+                this.basePath + "api/restricted/generic", String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.FORBIDDEN));
+    }
+    
+    private <T> ResponseEntity<T> requestWithToken(String token, String path, Class<T> returnType) {
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.add("X-AUTH-TOKEN", token);
+        HttpEntity<T> requestEntity = new HttpEntity<T>(null, requestHeaders);
+        return template.exchange(path,
+              HttpMethod.GET, requestEntity, returnType);
+    }
+
+    private String getTokenWithFacebook(String facebookUsername, String facebookPassword) throws Exception {
         ResponseEntity<String> response = template.getForEntity(
                 this.basePath + "auth/facebook", String.class);
         assertTrue(response.getStatusCode().is3xxRedirection());
@@ -118,9 +149,9 @@ public class FacebookLoginIntegrationTest {
         HtmlForm form = (HtmlForm) page1.getElementById("login_form");
         HtmlSubmitInput button = (HtmlSubmitInput) form.getInputsByValue("Log In").get(0);
         HtmlTextInput textField = form.getInputByName("email");
-        textField.setValueAttribute("testmike_tmnhopm_mcdonaldson@tfbnw.net");
+        textField.setValueAttribute(facebookUsername);
         HtmlPasswordInput textField2 = form.getInputByName("pass");
-        textField2.setValueAttribute("1234");
+        textField2.setValueAttribute(facebookPassword);
         HtmlPage homePage = button.click();
         // Check that we are redirected back to the application
         assertThat(homePage.getWebResponse().getRequestUrl().toString(), startsWith(this.basePath));
@@ -128,14 +159,10 @@ public class FacebookLoginIntegrationTest {
         assertNotNull(tokenCookie);
         String token = tokenCookie.getValue();
         assertNotNull(token);
-        
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.add("X-AUTH-TOKEN", token);
-        HttpEntity<String> requestEntity = new HttpEntity<String>(null, requestHeaders);
-        ResponseEntity<User> loggedInUserResponse = template.exchange(this.basePath + "api/user/current",
-                HttpMethod.GET, requestEntity, User.class);
-        User user = loggedInUserResponse.getBody();
-        assertThat(user.getUsername(), equalTo("TestMike"));
+        return token;
     }
-
+    
+    private String getTestToken() throws Exception {
+        return this.getTokenWithFacebook("testmike_tmnhopm_mcdonaldson@tfbnw.net", "1234");
+    }
 }
