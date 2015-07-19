@@ -1,14 +1,10 @@
 buildscript {
-  dependencies {
-    classpath('org.springframework.boot:spring-boot-gradle-plugin:1.2.0.M1')
-  }
-  repositories {
-    mavenLocal()	
-    mavenCentral()
-    maven {url 'http://repo.spring.io/milestone'}
-    maven {url 'http://repo.spring.io/release'}
-    maven {url 'http://repo.spring.io/snapshot'}
-  }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.2.RELEASE")
+    }
 }
 
 apply plugin: 'java'
@@ -29,15 +25,13 @@ eclipse {
 }
 
 repositories {
-  mavenLocal()	
-  mavenCentral()
-  maven {url 'http://repo.spring.io/milestone'}
-  maven {url 'http://repo.spring.io/release'}
-  maven {url 'http://repo.spring.io/snapshot'}
+    mavenCentral()
+    maven {url 'http://repo.spring.io/release'}
+    maven {url 'http://repo.spring.io/snapshot'}
 }
 
 dependencies {
-  compile('org.springframework.boot:spring-boot-autoconfigure')
+
   compile('org.springframework.boot:spring-boot-starter-web')
   compile('org.springframework.boot:spring-boot-starter-data-jpa')
   compile('org.springframework.boot:spring-boot-starter-security')
