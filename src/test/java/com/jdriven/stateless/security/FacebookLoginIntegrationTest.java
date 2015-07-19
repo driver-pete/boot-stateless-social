@@ -118,9 +118,9 @@ public class FacebookLoginIntegrationTest {
         HtmlForm form = (HtmlForm) page1.getElementById("login_form");
         HtmlSubmitInput button = (HtmlSubmitInput) form.getInputsByValue("Log In").get(0);
         HtmlTextInput textField = form.getInputByName("email");
-        textField.setValueAttribute("otognan@gmail.com");
+        textField.setValueAttribute("testmike_tmnhopm_mcdonaldson@tfbnw.net");
         HtmlPasswordInput textField2 = form.getInputByName("pass");
-        textField2.setValueAttribute("");
+        textField2.setValueAttribute("1234");
         HtmlPage homePage = button.click();
         // Check that we are redirected back to the application
         assertThat(homePage.getWebResponse().getRequestUrl().toString(), startsWith(this.basePath));
@@ -135,7 +135,7 @@ public class FacebookLoginIntegrationTest {
         ResponseEntity<User> loggedInUserResponse = template.exchange(this.basePath + "api/user/current",
                 HttpMethod.GET, requestEntity, User.class);
         User user = loggedInUserResponse.getBody();
-        assertThat(user.getUsername(), equalTo("Oleg"));
+        assertThat(user.getUsername(), equalTo("TestMike"));
     }
 
 }
