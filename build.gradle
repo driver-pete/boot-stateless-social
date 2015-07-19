@@ -44,6 +44,12 @@ dependencies {
   compile('org.springframework.boot:spring-boot-starter-social-facebook')
   compile('org.springframework.social:spring-social-security:1.1.0.RELEASE')
   compile('org.hibernate:hibernate-validator')
+  
+    compile('org.apache.httpcomponents:httpclient:4.3')
+    compile('com.googlecode.json-simple:json-simple:1.1')
+    compile('org.apache.commons:commons-lang3:3.0')
+    
+   compile('net.sourceforge.htmlunit:htmlunit:2.4')
 
   testCompile('org.springframework.boot:spring-boot-starter-test')
 

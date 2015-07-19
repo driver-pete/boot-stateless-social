@@ -1,61 +1,42 @@
 package com.jdriven.stateless.security;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
-
-import org.junit.Assert;
 
 import java.net.URI;
-import java.net.URL;
 
-
-
-
-
-
-
-
-//import org.apache.commons.lang3.StringUtils;
-////import org.apache.http.HttpHeaders;
-//import org.apache.http.client.HttpClient;
-//import org.apache.http.client.config.CookieSpecs;
-//import org.apache.http.client.config.RequestConfig;
-//import org.apache.http.client.protocol.HttpClientContext;
-//import org.apache.http.client.utils.URIBuilder;
-//import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-//import org.apache.http.conn.ssl.SSLContextBuilder;
-//import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-//import org.apache.http.impl.client.HttpClients;
-//import org.apache.http.protocol.HttpContext;
+import org.apache.commons.httpclient.Cookie;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.HttpContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.TestRestTemplate;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.core.annotation.Order;
-import org.springframework.core.env.Environment;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.social.config.annotation.ConnectionFactoryConfigurer;
-import org.springframework.social.config.annotation.EnableSocial;
-import org.springframework.social.config.annotation.SocialConfigurerAdapter;
-import org.springframework.social.facebook.connect.FacebookConnectionFactory;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
+
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+
 
 /*
  * Extra security config that opens access to test controller.
@@ -67,36 +48,66 @@ import org.springframework.web.client.RestTemplate;
  * main config for some reason.
  * 
  */
-@Configuration
-@EnableSocial
-@Order(1)
-@Profile("test")
-// default order of WebSecurityConfig is 100, so this config has a priority
-class TestStatelessSocialConfig extends StatelessSocialConfig {
-    @Override
-    public void addConnectionFactories(ConnectionFactoryConfigurer cfConfig, Environment env) {
-        System.out.println("TEST_HELLO");
+//@Configuration
+//@EnableSocial
+//@Order(1)
+////@Profile("test")
+//// default order of WebSecurityConfig is 100, so this config has a priority
+//class TestStatelessSocialConfig extends StatelessSocialConfig {
+//    @Override
+//    public void addConnectionFactories(ConnectionFactoryConfigurer cfConfig, Environment env) {
+//        System.out.println("TEST_HELLO");
 //        cfConfig.addConnectionFactory(new FacebookConnectionFactory(
 //                env.getProperty("facebook.appKey"),
 //                env.getProperty("facebook.appSecret")));
-    }
-}
+//    }
+//}
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = { StatelessAuthentication.class })
 @WebAppConfiguration
 @IntegrationTest({})
-@ActiveProfiles("test")
+//@ActiveProfiles("test")
 public class FacebookLoginIntegrationTest {
 
     //private URL base;
     private RestTemplate template;
+    private RestTemplate httpsTemplate;
     private String basePath;
 
     @Before
     public void setUp() throws Exception {
         this.template = new TestRestTemplate();
         this.basePath = "http://localhost:8080/";
+        
+        SSLContextBuilder builder = new SSLContextBuilder();
+        // trust self signed certificate
+        builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+        SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(
+                builder.build(),
+                SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        final HttpClient httpClient = HttpClients.custom()
+                .setSSLSocketFactory(sslConnectionSocketFactory).build();
+
+        this.httpsTemplate = new TestRestTemplate();
+        this.httpsTemplate
+                .setRequestFactory(new HttpComponentsClientHttpRequestFactory(
+                        httpClient) {
+                    @Override
+                    protected HttpContext createHttpContext(
+                            HttpMethod httpMethod, URI uri) {
+                        HttpClientContext context = HttpClientContext.create();
+                        RequestConfig.Builder builder = RequestConfig.custom()
+                                .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
+                                .setAuthenticationEnabled(false)
+                                .setRedirectsEnabled(false)
+                                .setConnectTimeout(1000)
+                                .setConnectionRequestTimeout(1000)
+                                .setSocketTimeout(1000);
+                        context.setRequestConfig(builder.build());
+                        return context;
+                    }
+                });
     }
 
 //    @Test
@@ -122,10 +133,34 @@ public class FacebookLoginIntegrationTest {
         URI loginRedirect = response.getHeaders().getLocation();
         assertThat(loginRedirect.toString(), startsWith("https://www.facebook.com/v1.0/dialog/oauth"));
         
-        ResponseEntity<String> facebookResponse = template.getForEntity(
-                loginRedirect.toString(), String.class);
-        System.out.println(facebookResponse);
-        assertTrue(false);
+        // Perform facebook login automation with HTMLUnit
+        WebClient webClient = new WebClient();
+        HtmlPage page1 = webClient.getPage(loginRedirect.toString());
+        HtmlForm form = (HtmlForm) page1.getElementById("login_form");
+        HtmlSubmitInput button = (HtmlSubmitInput) form.getInputsByValue("Log In").get(0);
+        HtmlTextInput textField = form.getInputByName("email");
+        textField.setValueAttribute("otognan@gmail.com");
+        HtmlPasswordInput textField2 = form.getInputByName("pass");
+        textField2.setValueAttribute();
+        HtmlPage homePage = button.click();
+        // Check that we are redirected back to the application
+        assertThat(homePage.getWebResponse().getRequestUrl().toString(), startsWith(this.basePath));
+        Cookie tokenCookie = webClient.getCookieManager().getCookie("AUTH-TOKEN");
+        assertNotNull(tokenCookie);
+        String token = tokenCookie.getValue();
+        
+        System.out.println("--------------------------------------");
+        System.out.println(token);
+        
+        
+//        ResponseEntity<String> facebookResponse = this.httpsTemplate.getForEntity(
+//                loginRedirect.toString(), String.class);
+//        System.out.println(loginRedirect.toString());
+//        System.out.println("-----------");
+//        System.out.println(facebookResponse.getHeaders());
+//        System.out.println("-----------");
+//        System.out.println(facebookResponse.getBody());
+//        assertTrue(true);
     }
     
 //    @Test
