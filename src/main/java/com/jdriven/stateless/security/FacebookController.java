@@ -17,4 +17,9 @@ public class FacebookController {
     public FacebookProfile getSocialDetails() {
         return facebook.userOperations().getUserProfile();
     }
+    
+    @RequestMapping(value = "/api/restricted/generic", method = RequestMethod.GET)
+    public String restrictedGeneric() {
+        return "AUTHENTICATED_ONLY";
+    }
 }

@@ -151,11 +151,11 @@ public class StatelessAuthenticationSecurityConfig extends WebSecurityConfigurer
     			//allow anonymous calls to social login
     			.antMatchers("/auth/**").permitAll()
     
-    			//allow anonymous GETs to API
-    			.antMatchers(HttpMethod.GET, "/api/**").permitAll()
+    			//allow anonymous GETs to user api getter
+    			.antMatchers(HttpMethod.GET, "/api/user/current").permitAll()
     
     			//all other request need to be authenticated
-    			.antMatchers(HttpMethod.GET, "/api/users/current/details").hasRole("USER")
+    			//hasRole automatically inserts ROLE_ prefix
     			.anyRequest().hasRole("USER").and()
 
 			// add custom authentication filter for complete stateless JWT based authentication

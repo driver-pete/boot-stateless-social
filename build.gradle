@@ -44,9 +44,16 @@ dependencies {
   compile('org.springframework.boot:spring-boot-starter-social-facebook')
   compile('org.springframework.social:spring-social-security:1.1.0.RELEASE')
   compile('org.hibernate:hibernate-validator')
-
+    
   testCompile('org.springframework.boot:spring-boot-starter-test')
+  testCompile('org.apache.httpcomponents:httpclient:4.3')
+  testCompile('net.sourceforge.htmlunit:htmlunit:2.4')
 
-  //runtime('org.postgresql:postgresql:9.2-1004-jdbc4')
   runtime('com.h2database:h2')
+}
+
+test {
+    testLogging {
+        exceptionFormat = 'full'
+    }
 }
