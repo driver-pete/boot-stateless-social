@@ -10,15 +10,6 @@ import static org.junit.Assert.assertTrue;
 import java.net.URI;
 
 import org.apache.commons.httpclient.Cookie;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContextBuilder;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.protocol.HttpContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,7 +21,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
@@ -51,42 +41,12 @@ public class FacebookLoginIntegrationTest {
 
     //private URL base;
     private RestTemplate template;
-    private RestTemplate httpsTemplate;
     private String basePath;
 
     @Before
     public void setUp() throws Exception {
         this.template = new TestRestTemplate();
         this.basePath = "http://localhost:8080/";
-        
-        SSLContextBuilder builder = new SSLContextBuilder();
-        // trust self signed certificate
-        builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
-        SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(
-                builder.build(),
-                SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-        final HttpClient httpClient = HttpClients.custom()
-                .setSSLSocketFactory(sslConnectionSocketFactory).build();
-
-        this.httpsTemplate = new TestRestTemplate();
-        this.httpsTemplate
-                .setRequestFactory(new HttpComponentsClientHttpRequestFactory(
-                        httpClient) {
-                    @Override
-                    protected HttpContext createHttpContext(
-                            HttpMethod httpMethod, URI uri) {
-                        HttpClientContext context = HttpClientContext.create();
-                        RequestConfig.Builder builder = RequestConfig.custom()
-                                .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
-                                .setAuthenticationEnabled(false)
-                                .setRedirectsEnabled(false)
-                                .setConnectTimeout(1000)
-                                .setConnectionRequestTimeout(1000)
-                                .setSocketTimeout(1000);
-                        context.setRequestConfig(builder.build());
-                        return context;
-                    }
-                });
     }
 
     @Test

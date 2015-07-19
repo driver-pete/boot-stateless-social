@@ -3,7 +3,6 @@ package com.jdriven.stateless.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -19,7 +18,6 @@ import org.springframework.social.facebook.connect.FacebookConnectionFactory;
 @Configuration
 @EnableSocial
 @PropertySource("classpath:social.properties")
-@Profile("dev")
 public class StatelessSocialConfig extends SocialConfigurerAdapter {
 
 	@Autowired
@@ -30,7 +28,6 @@ public class StatelessSocialConfig extends SocialConfigurerAdapter {
 
 	@Override
 	public void addConnectionFactories(ConnectionFactoryConfigurer cfConfig, Environment env) {
-	    System.out.println("NORMAL_HELLO");
 		cfConfig.addConnectionFactory(new FacebookConnectionFactory(
 				env.getProperty("facebook.appKey"),
 				env.getProperty("facebook.appSecret")));
